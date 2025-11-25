@@ -1,17 +1,43 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+    <ion-title>TEN MIESIĄC</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list>
+    @for (task of tasks; track task.id) {
+      <ion-item
+        [class.task-done]="task.done"
+        [class.task-monthly]="task.frequency === 2"
+        (click)="toggleTask(task)" (press)="openEditModal(task)">
+        <ion-label>
+          <div class="task-header">
+            <h2>{{ task.title }}</h2>
+            <p class="task-time">{{ getTaskTime(task) }}</p>
+          </div>
+          <p class="task-duration">{{ getTaskDuration(task) }}</p>
+        </ion-label>
+        @if (task.completionType === 1) {
+          <ion-checkbox
+            slot="end"
+            [checked]="task.done"
+            (ionChange)="toggleTask(task)"
+            (click)="$event.stopPropagation()">
+          </ion-checkbox>
+        }
+      </ion-item>
+    }
+    @empty {
+      <div class="empty-state">
+        <p>Brak zadań miesięcznych</p>
+      </div>
+    }
+  </ion-list>
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAddModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

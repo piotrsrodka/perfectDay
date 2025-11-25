@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Edytuj zadanie</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Anuluj</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full">
+    <ion-item>
+      <ion-label position="stacked">Tytuł</ion-label>
+      <ion-input [(ngModel)]="title" placeholder="Wpisz tytuł zadania"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Częstotliwość</ion-label>
+      <ion-select [(ngModel)]="frequency" interface="popover">
+        <ion-select-option [value]="TaskFrequency.Daily">Codziennie</ion-select-option>
+        <ion-select-option [value]="TaskFrequency.Weekly">Tydzień</ion-select-option>
+        <ion-select-option [value]="TaskFrequency.Monthly">Miesiąc</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Godzina rozpoczęcia</ion-label>
+      <div class="time-picker">
+        <ion-input type="number" [(ngModel)]="startHour" min="0" max="23" class="time-input"></ion-input>
+        <span class="time-separator">:</span>
+        <ion-input type="number" [(ngModel)]="startMinute" min="0" max="59" class="time-input"></ion-input>
+      </div>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Czas trwania (minuty)</ion-label>
+      <ion-input type="number" [(ngModel)]="durationMinutes" min="1" max="1440"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Typ wykonania</ion-label>
+      <ion-select [(ngModel)]="completionType" interface="popover">
+        <ion-select-option [value]="CompletionType.Auto">Automatyczne</ion-select-option>
+        <ion-select-option [value]="CompletionType.Manual">Do odhaczenia</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <div class="buttons">
+    <ion-button expand="block" color="danger" (click)="delete()">
+      Usuń
+    </ion-button>
+    <ion-button expand="block" color="medium" (click)="dismiss()">
+      Anuluj
+    </ion-button>
+    <ion-button expand="block" (click)="save()" [disabled]="!title.trim()">
+      Zapisz
+    </ion-button>
+  </div>
+</ion-content>
