@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonCheckbox, IonFab, IonFabButton, IonIcon, ModalController } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonCheckbox, IonFab, IonFabButton, IonIcon, ModalController, GestureController, NavController, AnimationController } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
 import { TaskStorageService } from '../services/task-storage.service';
 import { PerfectDayTask, TaskFrequency } from '../models/task.model';
 import { addIcons } from 'ionicons';
@@ -13,18 +14,89 @@ import { EditTaskModalComponent } from '../components/edit-task-modal/edit-task-
   styleUrls: ['tab2.page.scss'],
   imports: [CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonCheckbox, IonFab, IonFabButton, IonIcon],
 })
-export class Tab2Page implements OnInit {
+export class Tab2Page implements OnInit, AfterViewInit {
+  @ViewChild(IonContent, { read: ElementRef }) content!: ElementRef;
   tasks: PerfectDayTask[] = [];
 
   constructor(
     private taskStorage: TaskStorageService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private gestureCtrl: GestureController,
+    private router: Router,
+    private navCtrl: NavController,
+    private animationCtrl: AnimationController
   ) {
     addIcons({ add });
   }
 
   async ngOnInit() {
     await this.loadTasks();
+  }
+
+  ngAfterViewInit(): void {
+    this.setupSwipeGesture();
+  }
+
+  private setupSwipeGesture() {
+    const gesture = this.gestureCtrl.create({
+      el: this.content.nativeElement,
+      gestureName: 'swipe-tab',
+      direction: 'x',
+      onEnd: (ev) => {
+        if (ev.deltaX < -50) {
+          // Swipe left -> tab3
+          this.navCtrl.navigateForward('/tabs/tab3', {
+            animation: this.slideLeftAnimation.bind(this)
+          });
+        } else if (ev.deltaX > 50) {
+          // Swipe right -> tab1
+          this.navCtrl.navigateBack('/tabs/tab1', {
+            animation: this.slideRightAnimation.bind(this)
+          });
+        }
+      }
+    });
+    gesture.enable();
+  }
+
+  private slideLeftAnimation(_: HTMLElement, opts: any) {
+    const enteringEl = opts.enteringEl;
+    const leavingEl = opts.leavingEl;
+
+    const enteringAnimation = this.animationCtrl.create()
+      .addElement(enteringEl)
+      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
+      .fromTo('opacity', '0', '1');
+
+    const leavingAnimation = this.animationCtrl.create()
+      .addElement(leavingEl)
+      .fromTo('transform', 'translateX(0)', 'translateX(-100%)')
+      .fromTo('opacity', '1', '0');
+
+    return this.animationCtrl.create()
+      .duration(300)
+      .easing('ease-out')
+      .addAnimation([enteringAnimation, leavingAnimation]);
+  }
+
+  private slideRightAnimation(_: HTMLElement, opts: any) {
+    const enteringEl = opts.enteringEl;
+    const leavingEl = opts.leavingEl;
+
+    const enteringAnimation = this.animationCtrl.create()
+      .addElement(enteringEl)
+      .fromTo('transform', 'translateX(-100%)', 'translateX(0)')
+      .fromTo('opacity', '0', '1');
+
+    const leavingAnimation = this.animationCtrl.create()
+      .addElement(leavingEl)
+      .fromTo('transform', 'translateX(0)', 'translateX(100%)')
+      .fromTo('opacity', '1', '0');
+
+    return this.animationCtrl.create()
+      .duration(300)
+      .easing('ease-out')
+      .addAnimation([enteringAnimation, leavingAnimation]);
   }
 
   async ionViewWillEnter() {

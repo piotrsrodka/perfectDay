@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(dotnet run)",
+      "Bash(curl:*)",
+      "Bash(dir \"C:\\Users\\Piotr\\perfectDay\\perfectDay\" /b /s)",
+      "Bash(findstr:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

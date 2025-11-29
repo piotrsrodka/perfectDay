@@ -26,14 +26,14 @@ ion-content {
 }
 
 .current-time-label {
-  background: #ef4444;
+  background: #f58234;
   color: white;
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
   font-family: 'Courier New', monospace;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 10px rgba(245, 130, 52, 0.4);
 }
 
 .tasks-list {
@@ -54,7 +54,7 @@ ion-content {
   align-items: center;
 
   &.in-progress {
-    border-left-color: #fbbf24;
+    border-left-color: #f58234;
     background: #2d2a1f;
   }
 
@@ -76,15 +76,15 @@ ion-content {
 .task-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
 }
 
-.task-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.task-time {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #aaa;
+  min-width: 45px;
 }
 
 .task-title {
@@ -94,20 +94,11 @@ ion-content {
   flex: 1;
 }
 
-.task-meta {
-  display: flex;
-  gap: 12px;
+.task-duration {
   font-size: 12px;
   color: #888;
-}
-
-.task-time {
-  font-family: 'Courier New', monospace;
-  color: #aaa;
-}
-
-.task-duration {
-  color: #888;
+  min-width: 50px;
+  text-align: right;
 }
 
 .task-checkbox {
@@ -115,6 +106,11 @@ ion-content {
   --background-checked: #4ade80;
   --border-color-checked: #4ade80;
   margin: 0;
+}
+
+.checkbox-placeholder {
+  width: 22px;
+  min-width: 22px;
 }
 
 /* Czerwona linia aktualnego czasu */
@@ -131,8 +127,8 @@ ion-content {
 .time-line {
   width: 100%;
   height: 2px;
-  background: #ef4444;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  background: #f58234;
+  box-shadow: 0 0 10px rgba(245, 130, 52, 0.6);
 }
 
 .time-indicator {
@@ -141,9 +137,9 @@ ion-content {
   top: -4px;
   width: 10px;
   height: 10px;
-  background: #ef4444;
+  background: #f58234;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  box-shadow: 0 0 8px rgba(245, 130, 52, 0.8);
 }
 
 ion-fab-button {

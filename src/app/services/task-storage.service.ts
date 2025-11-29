@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { PerfectDayTask, CreateTaskRequest, TaskFrequency, CompletionType } from '../models/task.model';
+import {
+  PerfectDayTask,
+  CreateTaskRequest,
+  TaskFrequency,
+  CompletionType,
+} from '../models/task.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TaskStorageService {
   private readonly FILE_NAME = 'tasks.json';
@@ -16,19 +21,37 @@ export class TaskStorageService {
 
   async loadTasks(): Promise<PerfectDayTask[]> {
     try {
-      const result = await Filesystem.readFile({
-        path: this.FILE_NAME,
-        directory: Directory.Data,
-        encoding: Encoding.UTF8
-      });
+      // Fallback na localStorage dla trybu web
+      if (this.isWeb()) {
+        const data = localStorage.getItem('perfectday_tasks');
+        if (data) {
+          this.tasks = JSON.parse(data);
+          this.nextId =
+            this.tasks.length > 0
+              ? Math.max(...this.tasks.map((t) => t.id)) + 1
+              : 1;
+          console.log('Loaded tasks from localStorage:', this.tasks.length);
+          return this.tasks;
+        }
+      } else {
+        const result = await Filesystem.readFile({
+          path: this.FILE_NAME,
+          directory: Directory.Data,
+          encoding: Encoding.UTF8,
+        });
 
-      this.tasks = JSON.parse(result.data as string);
-      this.nextId = this.tasks.length > 0 ? Math.max(...this.tasks.map(t => t.id)) + 1 : 1;
+        this.tasks = JSON.parse(result.data as string);
+        this.nextId =
+          this.tasks.length > 0
+            ? Math.max(...this.tasks.map((t) => t.id)) + 1
+            : 1;
+        return this.tasks;
+      }
     } catch (error) {
-      console.log('No tasks file found, creating default tasks...');
-      await this.createDefaultTasks();
+      console.log('No tasks file found, creating default tasks...', error);
     }
 
+    await this.createDefaultTasks();
     return this.tasks;
   }
 
@@ -44,7 +67,7 @@ export class TaskStorageService {
         duration: '00:30:00',
         frequency: TaskFrequency.Daily,
         completionType: CompletionType.Auto,
-        done: false
+        done: false,
       },
       {
         id: 2,
@@ -53,7 +76,7 @@ export class TaskStorageService {
         duration: '00:15:00',
         frequency: TaskFrequency.Daily,
         completionType: CompletionType.Manual,
-        done: false
+        done: false,
       },
       {
         id: 3,
@@ -62,7 +85,7 @@ export class TaskStorageService {
         duration: '02:00:00',
         frequency: TaskFrequency.Daily,
         completionType: CompletionType.Manual,
-        done: false
+        done: false,
       },
       {
         id: 4,
@@ -71,8 +94,8 @@ export class TaskStorageService {
         duration: '01:00:00',
         frequency: TaskFrequency.Weekly,
         completionType: CompletionType.Manual,
-        done: false
-      }
+        done: false,
+      },
     ];
 
     this.nextId = 5;
@@ -81,15 +104,27 @@ export class TaskStorageService {
 
   private async saveTasks(): Promise<void> {
     try {
-      await Filesystem.writeFile({
-        path: this.FILE_NAME,
-        data: JSON.stringify(this.tasks, null, 2),
-        directory: Directory.Data,
-        encoding: Encoding.UTF8
-      });
+      if (this.isWeb()) {
+        localStorage.setItem(
+          'perfectday_tasks',
+          JSON.stringify(this.tasks, null, 2)
+        );
+        console.log('Saved tasks to localStorage:', this.tasks.length);
+      } else {
+        await Filesystem.writeFile({
+          path: this.FILE_NAME,
+          data: JSON.stringify(this.tasks, null, 2),
+          directory: Directory.Data,
+          encoding: Encoding.UTF8,
+        });
+      }
     } catch (error) {
       console.error('Error saving tasks:', error);
     }
+  }
+
+  private isWeb(): boolean {
+    return !!(typeof window !== 'undefined' && window.localStorage);
   }
 
   getTasks(): PerfectDayTask[] {
@@ -97,7 +132,7 @@ export class TaskStorageService {
   }
 
   getTaskById(id: number): PerfectDayTask | undefined {
-    return this.tasks.find(t => t.id === id);
+    return this.tasks.find((t) => t.id === id);
   }
 
   async addTask(request: CreateTaskRequest): Promise<PerfectDayTask> {
@@ -108,7 +143,7 @@ export class TaskStorageService {
       duration: request.duration,
       frequency: request.frequency,
       completionType: request.completionType,
-      done: false
+      done: false,
     };
 
     this.tasks.push(newTask);
@@ -116,8 +151,11 @@ export class TaskStorageService {
     return newTask;
   }
 
-  async updateTask(id: number, updated: PerfectDayTask): Promise<PerfectDayTask | null> {
-    const index = this.tasks.findIndex(t => t.id === id);
+  async updateTask(
+    id: number,
+    updated: PerfectDayTask
+  ): Promise<PerfectDayTask | null> {
+    const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) return null;
 
     this.tasks[index] = updated;
@@ -126,7 +164,7 @@ export class TaskStorageService {
   }
 
   async deleteTask(id: number): Promise<boolean> {
-    const index = this.tasks.findIndex(t => t.id === id);
+    const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) return false;
 
     this.tasks.splice(index, 1);
@@ -135,7 +173,7 @@ export class TaskStorageService {
   }
 
   async resetDailyTasks(): Promise<void> {
-    this.tasks.forEach(task => {
+    this.tasks.forEach((task) => {
       if (task.frequency === TaskFrequency.Daily) {
         task.done = false;
       }

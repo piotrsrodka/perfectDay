@@ -15,10 +15,14 @@ import {
   IonSelect,
   IonSelectOption,
   ModalController,
-  AlertController
+  AlertController,
 } from '@ionic/angular/standalone';
 import { TaskStorageService } from '../../services/task-storage.service';
-import { PerfectDayTask, TaskFrequency, CompletionType } from '../../models/task.model';
+import {
+  PerfectDayTask,
+  TaskFrequency,
+  CompletionType,
+} from '../../models/task.model';
 
 @Component({
   selector: 'app-edit-task-modal',
@@ -39,8 +43,8 @@ import { PerfectDayTask, TaskFrequency, CompletionType } from '../../models/task
     IonLabel,
     IonInput,
     IonSelect,
-    IonSelectOption
-  ]
+    IonSelectOption,
+  ],
 })
 export class EditTaskModalComponent implements OnInit {
   @Input() task!: PerfectDayTask;
@@ -88,13 +92,22 @@ export class EditTaskModalComponent implements OnInit {
 
     // Tworzenie ISO string z zachowaniem oryginalnej daty + nowa godzina
     const originalDate = new Date(this.task.startTime);
-    originalDate.setHours(parseInt(this.startHour), parseInt(this.startMinute), 0, 0);
+    originalDate.setHours(
+      parseInt(this.startHour),
+      parseInt(this.startMinute),
+      0,
+      0
+    );
     const startTime = originalDate.toISOString();
 
     // Konwersja minut na format HH:MM:SS
     const hours = Math.floor(this.durationMinutes / 60);
     const minutes = this.durationMinutes % 60;
-    const duration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    const duration =
+      hours.toString().padStart(2, '0') +
+      ':' +
+      minutes.toString().padStart(2, '0') +
+      ':00';
 
     const updatedTask: PerfectDayTask = {
       ...this.task,
@@ -102,7 +115,7 @@ export class EditTaskModalComponent implements OnInit {
       startTime,
       duration,
       frequency: this.frequency,
-      completionType: this.completionType
+      completionType: this.completionType,
     };
 
     await this.taskStorage.updateTask(this.task.id, updatedTask);
@@ -112,11 +125,11 @@ export class EditTaskModalComponent implements OnInit {
   async delete() {
     const alert = await this.alertCtrl.create({
       header: 'Usuń zadanie',
-      message: `Czy na pewno chcesz usunąć "${this.task.title}"?`,
+      message: 'Czy na pewno chcesz usunąć "' + this.task.title + '"?',
       buttons: [
         {
           text: 'Anuluj',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
           text: 'Usuń',
@@ -124,9 +137,9 @@ export class EditTaskModalComponent implements OnInit {
           handler: async () => {
             await this.taskStorage.deleteTask(this.task.id);
             this.modalCtrl.dismiss({ deleted: true });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();

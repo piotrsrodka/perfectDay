@@ -41,3 +41,23 @@ ion-toolbar {
   padding-top: 15px;
   --min-height: calc(56px + 15px);
 }
+
+ion-title {
+  text-align: center;
+}
+
+ion-tab-bar {
+  --background: #1a1a1a;
+}
+
+ion-tab-button {
+  --color: #888;
+  --color-selected: #00ff00;
+
+  ion-label {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 13px;
+  }
+}

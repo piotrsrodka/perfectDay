@@ -3,6 +3,9 @@ import {
   AfterViewInit,
   Component,
   OnInit,
+  Renderer2,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -15,7 +18,11 @@ import {
   IonIcon,
   IonCheckbox,
   ModalController,
+  GestureController,
+  NavController,
 } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
+import { AnimationController } from '@ionic/angular/standalone';
 import { TaskStorageService } from '../services/task-storage.service';
 import {
   PerfectDayTask,
@@ -45,6 +52,8 @@ import { EditTaskModalComponent } from '../components/edit-task-modal/edit-task-
   ],
 })
 export class Tab1Page implements OnInit, AfterViewInit {
+  @ViewChild(IonContent, { read: ElementRef }) content!: ElementRef;
+
   tasks: PerfectDayTask[] = [];
   currentTimeLabel = '';
   currentTimePosition = 0;
@@ -54,18 +63,63 @@ export class Tab1Page implements OnInit, AfterViewInit {
 
   constructor(
     private taskStorage: TaskStorageService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private renderer: Renderer2,
+    private gestureCtrl: GestureController,
+    private router: Router,
+    private navCtrl: NavController,
+    private animationCtrl: AnimationController
   ) {
     addIcons({ add });
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    this.setupSwipeGesture();
+  }
+
+  private setupSwipeGesture() {
+    const gesture = this.gestureCtrl.create({
+      el: this.content.nativeElement,
+      gestureName: 'swipe-tab',
+      direction: 'x',
+      onEnd: (ev) => {
+        if (ev.deltaX < -50) {
+          // Swipe left -> next tab (tab2)
+          this.navCtrl.navigateForward('/tabs/tab2', {
+            animation: this.slideLeftAnimation.bind(this),
+          });
+        }
+      },
+    });
+    gesture.enable();
+  }
+
+  private slideLeftAnimation(_: HTMLElement, opts: any) {
+    const enteringEl = opts.enteringEl;
+    const leavingEl = opts.leavingEl;
+
+    const enteringAnimation = this.animationCtrl
+      .create()
+      .addElement(enteringEl)
+      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
+      .fromTo('opacity', '0', '1');
+
+    const leavingAnimation = this.animationCtrl
+      .create()
+      .addElement(leavingEl)
+      .fromTo('transform', 'translateX(0)', 'translateX(-100%)')
+      .fromTo('opacity', '1', '0');
+
+    return this.animationCtrl
+      .create()
+      .duration(300)
+      .easing('ease-out')
+      .addAnimation([enteringAnimation, leavingAnimation]);
+  }
 
   async ngOnInit() {
     await this.loadTasks();
-
-    // Update current time every minute
-    setInterval(() => this.updateCurrentTime(), 60000);
+    setInterval(() => this.updateCurrentTime(), 6000);
   }
 
   async ionViewWillEnter() {
@@ -86,9 +140,6 @@ export class Tab1Page implements OnInit, AfterViewInit {
   private async loadTasks() {
     const allTasks = await this.taskStorage.loadTasks();
 
-    console.log('Wczytane zadania:', allTasks);
-    this.updateCurrentTime();
-
     this.tasks = allTasks
       .filter((t) => t.frequency === TaskFrequency.Daily)
       .sort(
@@ -96,6 +147,8 @@ export class Tab1Page implements OnInit, AfterViewInit {
           new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
       );
     this.autoCompleteTasks();
+
+    setTimeout(() => this.updateCurrentTime(), 100);
   }
 
   private autoCompleteTasks() {
@@ -126,11 +179,13 @@ export class Tab1Page implements OnInit, AfterViewInit {
       ':' +
       now.getMinutes().toString().padStart(2, '0');
 
-    const headerOffset = 15;
+    const headerOffset = 0;
     this.currentTimePosition =
       this.calculateCurrentTimePosition(now) + headerOffset;
-    let line = document.getElementById('current-time-line');
-    if (line) line.style.top = this.currentTimePosition + 'px';
+    const line = document.getElementById('current-time-line');
+    if (line) {
+      this.renderer.setStyle(line, 'top', this.currentTimePosition + 'px');
+    }
   }
 
   private calculateCurrentTimePosition(now: Date): number {

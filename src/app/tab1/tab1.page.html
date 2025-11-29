@@ -6,30 +6,22 @@
 
 <ion-content [fullscreen]="true">
   <div class="tasks-container">
-    <!-- Aktualny czas na górze -->
-    <div class="current-time-header">
-      <span class="current-time-label">{{ currentTimeLabel }}</span>
-    </div>
 
-    <!-- Stackowane zadania -->
     <div class="tasks-list">
       @for (task of tasks; track task.id) {
       <div id="task-{{ task.id }}" class="task-card" [class.done]="task.done"
-        [class.in-progress]="isTaskInProgress(task)" [style.height.px]="getTaskHeight(task)"
-        (click)="toggleTask(task)" (press)="openEditModal(task)">
+        [class.in-progress]="isTaskInProgress(task)" [style.height.px]="getTaskHeight(task)">
         <div class="task-content">
-          <div class="task-header">
-            <div class="task-title">{{ task.title }}</div>
-            @if (task.completionType === 1) {
-            <ion-checkbox class="task-checkbox" [checked]="task.done" (ionChange)="toggleTask(task)"
-              (click)="$event.stopPropagation()">
-            </ion-checkbox>
-            }
-          </div>
-          <div class="task-meta">
-            <span class="task-time">{{ getTaskTime(task) }}</span>
-            <span class="task-duration">{{ getTaskDuration(task) }}</span>
-          </div>
+          <span class="task-time">{{ getTaskTime(task) }}</span>
+          <div class="task-title" (click)="openEditModal(task)">{{ task.title }}</div>
+          <span class="task-duration">{{ getTaskDuration(task) }}</span>
+          @if (task.completionType === 1) {
+          <ion-checkbox class="task-checkbox" [checked]="task.done" (ionChange)="toggleTask(task)"
+            (click)="$event.stopPropagation()">
+          </ion-checkbox>
+          } @else {
+          <div class="checkbox-placeholder"></div>
+          }
         </div>
       </div>
       }

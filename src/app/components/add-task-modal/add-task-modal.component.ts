@@ -17,10 +17,14 @@ import {
   IonDatetime,
   IonDatetimeButton,
   IonModal as IonModalComponent,
-  ModalController
+  ModalController,
 } from '@ionic/angular/standalone';
 import { TaskStorageService } from '../../services/task-storage.service';
-import { TaskFrequency, CompletionType, CreateTaskRequest } from '../../models/task.model';
+import {
+  TaskFrequency,
+  CompletionType,
+  CreateTaskRequest,
+} from '../../models/task.model';
 
 @Component({
   selector: 'app-add-task-modal',
@@ -44,8 +48,8 @@ import { TaskFrequency, CompletionType, CreateTaskRequest } from '../../models/t
     IonSelectOption,
     IonDatetime,
     IonDatetimeButton,
-    IonModalComponent
-  ]
+    IonModalComponent,
+  ],
 })
 export class AddTaskModalComponent {
   title = '';
@@ -84,14 +88,18 @@ export class AddTaskModalComponent {
     // Konwersja minut na format HH:MM:SS
     const hours = Math.floor(this.durationMinutes / 60);
     const minutes = this.durationMinutes % 60;
-    const duration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    const duration =
+      hours.toString().padStart(2, '0') +
+      ':' +
+      minutes.toString().padStart(2, '0') +
+      ':00';
 
     const request: CreateTaskRequest = {
       title: this.title,
       startTime,
       duration,
       frequency: this.frequency,
-      completionType: this.completionType
+      completionType: this.completionType,
     };
 
     const newTask = await this.taskStorage.addTask(request);
