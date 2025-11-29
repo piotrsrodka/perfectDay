@@ -1,12 +1,4 @@
-import {
-  AfterContentInit,
-  AfterViewInit,
-  Component,
-  OnInit,
-  Renderer2,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { AfterContentInit, Component, OnInit, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -20,25 +12,25 @@ import {
   ModalController,
   GestureController,
   NavController,
+  AnimationController,
 } from '@ionic/angular/standalone';
-import { Router } from '@angular/router';
-import { AnimationController } from '@ionic/angular/standalone';
-import { TaskStorageService } from '../services/task-storage.service';
+import { TaskStorageService } from '../../services/task-storage.service';
 import {
   PerfectDayTask,
   TaskFrequency,
   CompletionType,
-} from '../models/task.model';
+} from '../../models/task.model';
 import { addIcons } from 'ionicons';
 import { add } from 'ionicons/icons';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { AddTaskModalComponent } from '../components/add-task-modal/add-task-modal.component';
-import { EditTaskModalComponent } from '../components/edit-task-modal/edit-task-modal.component';
+import { AddTaskModalComponent } from '../../components/add-task-modal/add-task-modal.component';
+import { EditTaskModalComponent } from '../../components/edit-task-modal/edit-task-modal.component';
+import { SwipeableTabPage } from '../base/swipeable-tab.page';
 
 @Component({
-  selector: 'app-tab1',
-  templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss'],
+  selector: 'app-day',
+  templateUrl: 'day.page.html',
+  styleUrls: ['day.page.scss'],
   imports: [
     CommonModule,
     IonHeader,
@@ -51,8 +43,8 @@ import { EditTaskModalComponent } from '../components/edit-task-modal/edit-task-
     IonCheckbox,
   ],
 })
-export class Tab1Page implements OnInit, AfterViewInit {
-  @ViewChild(IonContent, { read: ElementRef }) content!: ElementRef;
+export class DayPage extends SwipeableTabPage implements OnInit {
+  protected currentTabIndex = 0;
 
   tasks: PerfectDayTask[] = [];
   currentTimeLabel = '';
@@ -65,56 +57,12 @@ export class Tab1Page implements OnInit, AfterViewInit {
     private taskStorage: TaskStorageService,
     private modalCtrl: ModalController,
     private renderer: Renderer2,
-    private gestureCtrl: GestureController,
-    private router: Router,
-    private navCtrl: NavController,
-    private animationCtrl: AnimationController
+    gestureCtrl: GestureController,
+    navCtrl: NavController,
+    animationCtrl: AnimationController
   ) {
+    super(gestureCtrl, navCtrl, animationCtrl);
     addIcons({ add });
-  }
-
-  ngAfterViewInit(): void {
-    this.setupSwipeGesture();
-  }
-
-  private setupSwipeGesture() {
-    const gesture = this.gestureCtrl.create({
-      el: this.content.nativeElement,
-      gestureName: 'swipe-tab',
-      direction: 'x',
-      onEnd: (ev) => {
-        if (ev.deltaX < -50) {
-          // Swipe left -> next tab (tab2)
-          this.navCtrl.navigateForward('/tabs/tab2', {
-            animation: this.slideLeftAnimation.bind(this),
-          });
-        }
-      },
-    });
-    gesture.enable();
-  }
-
-  private slideLeftAnimation(_: HTMLElement, opts: any) {
-    const enteringEl = opts.enteringEl;
-    const leavingEl = opts.leavingEl;
-
-    const enteringAnimation = this.animationCtrl
-      .create()
-      .addElement(enteringEl)
-      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
-      .fromTo('opacity', '0', '1');
-
-    const leavingAnimation = this.animationCtrl
-      .create()
-      .addElement(leavingEl)
-      .fromTo('transform', 'translateX(0)', 'translateX(-100%)')
-      .fromTo('opacity', '1', '0');
-
-    return this.animationCtrl
-      .create()
-      .duration(300)
-      .easing('ease-out')
-      .addAnimation([enteringAnimation, leavingAnimation]);
   }
 
   async ngOnInit() {
@@ -235,7 +183,6 @@ export class Tab1Page implements OnInit, AfterViewInit {
       );
     }
 
-    // Jeśli czas jest po wszystkich zadaniach
     console.log('Po wszystkich zadaniach, zwracam: ' + position + 'px');
     return position;
   }

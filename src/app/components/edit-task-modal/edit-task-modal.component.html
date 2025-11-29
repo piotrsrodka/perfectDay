@@ -1,9 +1,6 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Edytuj zadanie</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="dismiss()">Anuluj</ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -49,9 +46,6 @@
   <div class="buttons">
     <ion-button expand="block" color="danger" (click)="delete()">
       Usuń
-    </ion-button>
-    <ion-button expand="block" color="medium" (click)="dismiss()">
-      Anuluj
     </ion-button>
     <ion-button expand="block" (click)="save()" [disabled]="!title.trim()">
       Zapisz

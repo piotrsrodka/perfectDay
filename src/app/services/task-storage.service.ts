@@ -30,7 +30,6 @@ export class TaskStorageService {
             this.tasks.length > 0
               ? Math.max(...this.tasks.map((t) => t.id)) + 1
               : 1;
-          console.log('Loaded tasks from localStorage:', this.tasks.length);
           return this.tasks;
         }
       } else {
@@ -49,9 +48,9 @@ export class TaskStorageService {
       }
     } catch (error) {
       console.log('No tasks file found, creating default tasks...', error);
+      await this.createDefaultTasks();
     }
 
-    await this.createDefaultTasks();
     return this.tasks;
   }
 

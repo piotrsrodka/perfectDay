@@ -7,30 +7,28 @@ export const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
-        loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
+        path: 'day',
+        loadComponent: () => import('./day/day.page').then((m) => m.DayPage),
       },
       {
-        path: 'tab2',
-        loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+        path: 'week',
+        loadComponent: () => import('./week/week.page').then((m) => m.WeekPage),
       },
       {
-        path: 'tab3',
+        path: 'month',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('./month/month.page').then((m) => m.MonthPage),
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/day',
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/day',
     pathMatch: 'full',
   },
 ];

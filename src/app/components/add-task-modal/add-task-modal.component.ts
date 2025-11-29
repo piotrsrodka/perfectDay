@@ -5,7 +5,6 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonButtons,
   IonButton,
   IonContent,
   IonList,
@@ -14,9 +13,6 @@ import {
   IonInput,
   IonSelect,
   IonSelectOption,
-  IonDatetime,
-  IonDatetimeButton,
-  IonModal as IonModalComponent,
   ModalController,
 } from '@ionic/angular/standalone';
 import { TaskStorageService } from '../../services/task-storage.service';
@@ -37,7 +33,6 @@ import {
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonButtons,
     IonButton,
     IonContent,
     IonList,
@@ -46,9 +41,6 @@ import {
     IonInput,
     IonSelect,
     IonSelectOption,
-    IonDatetime,
-    IonDatetimeButton,
-    IonModalComponent,
   ],
 })
 export class AddTaskModalComponent {
