@@ -13,16 +13,22 @@ ion-content {
   --background: #1a1a1a;
 }
 
-ion-list {
+.tasks-list {
   background: #1a1a1a;
+  padding: 8px;
 }
 
-ion-item {
-  --background: #2a2a2a;
-  --border-color: #333;
-  --padding-start: 0;
+.task-item {
+  background: #2a2a2a;
+  border: 1px solid #333;
   border-left: 4px solid transparent;
-  margin-bottom: 2px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
 
   &.task-monthly {
     border-left-color: #ff4a9e;
@@ -32,6 +38,10 @@ ion-item {
     opacity: 0.6;
     border-left-color: #4ade80 !important;
   }
+}
+
+.task-content {
+  flex: 1;
 }
 
 .task-header {
@@ -45,6 +55,10 @@ ion-item {
     font-weight: 500;
     color: #e0e0e0;
     margin: 0;
+    cursor: pointer;
+    &:hover {
+      color: #00ff00;
+    }
   }
 
   .task-time {
@@ -72,7 +86,8 @@ ion-fab-button {
   --box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
 }
 
-ion-checkbox {
+.task-checkbox {
+  margin-left: 12px;
   --background-checked: #4ade80;
   --border-color-checked: #4ade80;
 }

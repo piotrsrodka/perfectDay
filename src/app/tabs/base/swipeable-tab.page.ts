@@ -4,20 +4,31 @@ import {
   ElementRef,
   Directive,
   Renderer2,
+  ChangeDetectorRef,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   IonContent,
   GestureController,
   NavController,
   AnimationController,
+  ModalController,
 } from '@ionic/angular/standalone';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { TaskStorageService } from '../../services/task-storage.service';
+import { TaskFrequency, PerfectDayTask } from '../../models/task.model';
+import { AddTaskModalComponent } from '../../components/add-task-modal/add-task-modal.component';
+import { EditTaskModalComponent } from '../../components/edit-task-modal/edit-task-modal.component';
 
 @Directive()
 export abstract class SwipeableTabPage implements AfterViewInit {
   @ViewChild(IonContent, { read: ElementRef }) content!: ElementRef;
 
-  protected readonly tabRoutes = ['/tabs/day', '/tabs/week', '/tabs/month'];
+  protected readonly tabRoutes = ['/day', '/week', '/month'];
+  protected readonly tabNames = ['day', 'week', 'month'];
   protected abstract currentTabIndex: number;
+  protected abstract defaultFrequency: TaskFrequency;
+  protected abstract loadTasks(): Promise<void>;
 
   private swipeState = {
     isActive: false,
@@ -30,7 +41,11 @@ export abstract class SwipeableTabPage implements AfterViewInit {
     protected gestureCtrl: GestureController,
     protected navCtrl: NavController,
     protected animationCtrl: AnimationController,
-    protected renderer: Renderer2
+    protected renderer: Renderer2,
+    protected router: Router,
+    protected cdr: ChangeDetectorRef,
+    protected modalCtrl: ModalController,
+    protected taskStorage: TaskStorageService
   ) {}
 
   ngAfterViewInit(): void {
@@ -44,7 +59,6 @@ export abstract class SwipeableTabPage implements AfterViewInit {
       direction: 'x',
 
       onStart: (ev) => {
-        console.log('👆 onStart:', ev.currentX);
         this.swipeState.isActive = true;
         this.swipeState.startX = ev.currentX;
         this.swipeState.threshold = window.innerWidth * 0.3; // 30% szerokości ekranu
@@ -54,11 +68,6 @@ export abstract class SwipeableTabPage implements AfterViewInit {
         if (!this.swipeState.isActive) return;
 
         const deltaX = ev.deltaX;
-        console.log('🔄 onMove:', {
-          deltaX,
-          canLeft: this.canSwipeLeft(),
-          canRight: this.canSwipeRight(),
-        });
 
         // Ogranicz przesunięcie gdy nie ma sąsiedniego taba
         if (deltaX < 0 && !this.canSwipeLeft()) return;
@@ -73,24 +82,14 @@ export abstract class SwipeableTabPage implements AfterViewInit {
         const deltaX = ev.deltaX;
         const velocityX = ev.velocityX || 0;
 
-        // Szybki ruch = flick gesture (velocity > 0.3)
+        // Szybki ruch = flick gesture (velocity > 0.2)
         const isFlick = Math.abs(velocityX) > 0.2;
         const exceedsThreshold = Math.abs(deltaX) > this.swipeState.threshold;
 
-        console.log('🛑 onEnd:', {
-          deltaX,
-          velocityX,
-          threshold: this.swipeState.threshold,
-          isFlick,
-          exceedsThreshold,
-        });
-
         // Zmień tab jeśli: szybki ruch ALBO przekroczono threshold
         if (isFlick || exceedsThreshold) {
-          console.log('➡️ completeTransition (flick:', isFlick, ')');
           this.completeTransition(deltaX);
         } else {
-          console.log('⬅️ springBack');
           this.springBack();
         }
       },
@@ -110,8 +109,6 @@ export abstract class SwipeableTabPage implements AfterViewInit {
     const contentEl = this.content.nativeElement;
     const scrollEl = contentEl.querySelector('.ion-content-scroll-host');
 
-    console.log('🔍 applyTransform:', { deltaX, contentEl, scrollEl });
-
     // Fallback: jeśli scroll-host nie istnieje, użyj ion-content
     const targetEl = scrollEl || contentEl;
 
@@ -119,25 +116,25 @@ export abstract class SwipeableTabPage implements AfterViewInit {
       this.renderer.setStyle(targetEl, 'transform', `translateX(${deltaX}px)`);
       this.renderer.setStyle(targetEl, 'transition', 'none');
       this.renderer.setStyle(targetEl, 'will-change', 'transform');
-      console.log('✅ Transform applied to:', targetEl);
-    } else {
-      console.error('❌ No target element found!');
     }
   }
 
-  private completeTransition(deltaX: number) {
+  private async completeTransition(deltaX: number) {
     // Wyczyść transform
     this.clearTransform();
 
-    // Wykonaj nawigację z animacją
+    let targetTabName: string | null = null;
+
     if (deltaX < 0 && this.canSwipeLeft()) {
-      this.navCtrl.navigateForward(this.tabRoutes[this.currentTabIndex + 1], {
-        animation: this.slideLeftAnimation.bind(this),
-      });
+      targetTabName = this.tabNames[this.currentTabIndex + 1];
     } else if (deltaX > 0 && this.canSwipeRight()) {
-      this.navCtrl.navigateBack(this.tabRoutes[this.currentTabIndex - 1], {
-        animation: this.slideRightAnimation.bind(this),
-      });
+      targetTabName = this.tabNames[this.currentTabIndex - 1];
+    }
+
+    if (targetTabName) {
+      // Prosta nawigacja przez Router - tab bar sam się zaktualizuje
+      const targetRoute = this.tabRoutes[this.tabNames.indexOf(targetTabName)];
+      await this.router.navigateByUrl(targetRoute);
     }
   }
 
@@ -145,8 +142,6 @@ export abstract class SwipeableTabPage implements AfterViewInit {
     const contentEl = this.content.nativeElement;
     const scrollEl = contentEl.querySelector('.ion-content-scroll-host');
     const targetEl = scrollEl || contentEl;
-
-    console.log('🔙 springBack to targetEl:', targetEl);
 
     if (targetEl) {
       // Dodaj transition dla smooth spring-back
@@ -222,5 +217,39 @@ export abstract class SwipeableTabPage implements AfterViewInit {
       .duration(300)
       .easing('ease-out')
       .addAnimation([enteringAnimation, leavingAnimation]);
+  }
+
+  async openAddModal() {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Light });
+    } catch (e) {
+      console.warn('Wibracja nie działa lub nie jest wspierana.', e);
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: AddTaskModalComponent,
+      componentProps: { defaultFrequency: this.defaultFrequency },
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.loadTasks();
+    }
+  }
+
+  async openEditModal(task: PerfectDayTask) {
+    const modal = await this.modalCtrl.create({
+      component: EditTaskModalComponent,
+      componentProps: { task },
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.loadTasks();
+    }
   }
 }

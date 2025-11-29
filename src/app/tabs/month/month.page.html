@@ -5,39 +5,30 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-list>
+  <div class="tasks-list">
     @for (task of tasks; track task.id) {
-      <ion-item
-        [class.task-done]="task.done"
-        [class.task-monthly]="task.frequency === 2"
-        (click)="toggleTask(task)" (press)="openEditModal(task)">
-        <ion-label>
-          <div class="task-header">
-            <h2>{{ task.title }}</h2>
-            <p class="task-time">{{ getTaskTime(task) }}</p>
-          </div>
-          <p class="task-duration">{{ getTaskDuration(task) }}</p>
-        </ion-label>
-        @if (task.completionType === 1) {
-          <ion-checkbox
-            slot="end"
-            [checked]="task.done"
-            (ionChange)="toggleTask(task)"
-            (click)="$event.stopPropagation()">
-          </ion-checkbox>
-        }
-      </ion-item>
+    <div class="task-item" [class.task-done]="task.done" [class.task-monthly]="task.frequency === 2" (click)="toggleTask(task)">
+      <div class="task-content">
+        <div class="task-header">
+          <h2 (click)="openEditModal(task); $event.stopPropagation()">{{ task.title }}</h2>
+          <p class="task-time">{{ getTaskTime(task) }}</p>
+        </div>
+        <p class="task-duration">{{ getTaskDuration(task) }}</p>
+      </div>
+      @if (task.completionType === 1) {
+      <ion-checkbox class="task-checkbox" [checked]="task.done" (ionChange)="toggleTask(task)" (click)="$event.stopPropagation()">
+      </ion-checkbox>
+      }
+    </div>
     }
     @empty {
-      <div class="empty-state">
-        <p>Brak zadań miesięcznych</p>
-      </div>
+    <div class="empty-state">
+      <p>Brak zadań miesięcznych</p>
+    </div>
     }
-  </ion-list>
+  </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openAddModal()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>
+
+<app-fab-button (add)="openAddModal()"></app-fab-button>
+<app-footer currentTab="month"></app-footer>

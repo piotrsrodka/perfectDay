@@ -1,18 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { Renderer2 } from '@angular/core';
+import { Component, OnInit, Renderer2, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
   IonCheckbox,
-  IonFab,
-  IonFabButton,
-  IonIcon,
   ModalController,
   GestureController,
   NavController,
@@ -20,10 +14,9 @@ import {
 } from '@ionic/angular/standalone';
 import { TaskStorageService } from '../../services/task-storage.service';
 import { PerfectDayTask, TaskFrequency } from '../../models/task.model';
-import { addIcons } from 'ionicons';
-import { add } from 'ionicons/icons';
-import { EditTaskModalComponent } from '../../components/edit-task-modal/edit-task-modal.component';
 import { SwipeableTabPage } from '../base/swipeable-tab.page';
+import { FooterComponent } from '../../components/footer/footer.component';
+import { FabButtonComponent } from '../../components/fab-button/fab-button.component';
 
 @Component({
   selector: 'app-week',
@@ -35,29 +28,27 @@ import { SwipeableTabPage } from '../base/swipeable-tab.page';
     IonToolbar,
     IonTitle,
     IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
     IonCheckbox,
-    IonFab,
-    IonFabButton,
-    IonIcon,
+    FooterComponent,
+    FabButtonComponent,
   ],
 })
 export class WeekPage extends SwipeableTabPage implements OnInit {
   protected currentTabIndex = 1;
+  protected defaultFrequency = TaskFrequency.Weekly;
   tasks: PerfectDayTask[] = [];
 
   constructor(
-    private taskStorage: TaskStorageService,
-    private modalCtrl: ModalController,
+    taskStorage: TaskStorageService,
+    modalCtrl: ModalController,
     renderer: Renderer2,
     gestureCtrl: GestureController,
     navCtrl: NavController,
-    animationCtrl: AnimationController
+    animationCtrl: AnimationController,
+    router: Router,
+    cdr: ChangeDetectorRef
   ) {
-    super(gestureCtrl, navCtrl, animationCtrl, renderer);
-    addIcons({ add });
+    super(gestureCtrl, navCtrl, animationCtrl, renderer, router, cdr, modalCtrl, taskStorage);
   }
 
   async ngOnInit() {
@@ -68,7 +59,7 @@ export class WeekPage extends SwipeableTabPage implements OnInit {
     await this.loadTasks();
   }
 
-  private async loadTasks() {
+  protected async loadTasks() {
     const allTasks = await this.taskStorage.loadTasks();
     this.tasks = allTasks.filter((t) => t.frequency === TaskFrequency.Weekly);
   }
@@ -94,23 +85,5 @@ export class WeekPage extends SwipeableTabPage implements OnInit {
   async toggleTask(task: PerfectDayTask) {
     task.done = !task.done;
     await this.taskStorage.updateTask(task.id, task);
-  }
-
-  openAddModal() {
-    console.log('Open add modal');
-  }
-
-  async openEditModal(task: PerfectDayTask) {
-    const modal = await this.modalCtrl.create({
-      component: EditTaskModalComponent,
-      componentProps: { task },
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data) {
-      await this.loadTasks();
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -43,13 +43,15 @@ import {
     IonSelectOption,
   ],
 })
-export class AddTaskModalComponent {
+export class AddTaskModalComponent implements OnInit {
+  @Input() defaultFrequency?: TaskFrequency;
+
   title = '';
   startHour = '09';
   startMinute = '00';
   durationMinutes = 30;
   frequency = TaskFrequency.Daily;
-  completionType = CompletionType.Manual;
+  completionType = CompletionType.Auto;
 
   readonly TaskFrequency = TaskFrequency;
   readonly CompletionType = CompletionType;
@@ -61,6 +63,12 @@ export class AddTaskModalComponent {
     const now = new Date();
     this.startHour = now.getHours().toString().padStart(2, '0');
     this.startMinute = now.getMinutes().toString().padStart(2, '0');
+  }
+
+  ngOnInit() {
+    if (this.defaultFrequency !== undefined) {
+      this.frequency = this.defaultFrequency;
+    }
   }
 
   dismiss() {

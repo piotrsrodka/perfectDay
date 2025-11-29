@@ -1,4 +1,11 @@
-import { AfterContentInit, Component, OnInit, Renderer2 } from '@angular/core';
+import {
+  AfterContentInit,
+  Component,
+  OnInit,
+  Renderer2,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -20,12 +27,9 @@ import {
   TaskFrequency,
   CompletionType,
 } from '../../models/task.model';
-import { addIcons } from 'ionicons';
-import { add } from 'ionicons/icons';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { AddTaskModalComponent } from '../../components/add-task-modal/add-task-modal.component';
-import { EditTaskModalComponent } from '../../components/edit-task-modal/edit-task-modal.component';
 import { SwipeableTabPage } from '../base/swipeable-tab.page';
+import { FooterComponent } from '../../components/footer/footer.component';
+import { FabButtonComponent } from '../../components/fab-button/fab-button.component';
 
 @Component({
   selector: 'app-day',
@@ -37,14 +41,14 @@ import { SwipeableTabPage } from '../base/swipeable-tab.page';
     IonToolbar,
     IonTitle,
     IonContent,
-    IonFab,
-    IonFabButton,
-    IonIcon,
     IonCheckbox,
+    FooterComponent,
+    FabButtonComponent,
   ],
 })
 export class DayPage extends SwipeableTabPage implements OnInit {
   protected currentTabIndex = 0;
+  protected defaultFrequency = TaskFrequency.Daily;
 
   tasks: PerfectDayTask[] = [];
   currentTimeLabel = '';
@@ -54,15 +58,16 @@ export class DayPage extends SwipeableTabPage implements OnInit {
   readonly TASK_GAP = 15; // Przerwa między zadaniami w px
 
   constructor(
-    private taskStorage: TaskStorageService,
-    private modalCtrl: ModalController,
+    taskStorage: TaskStorageService,
+    modalCtrl: ModalController,
     renderer: Renderer2,
     gestureCtrl: GestureController,
     navCtrl: NavController,
-    animationCtrl: AnimationController
+    animationCtrl: AnimationController,
+    router: Router,
+    cdr: ChangeDetectorRef
   ) {
-    super(gestureCtrl, navCtrl, animationCtrl, renderer);
-    addIcons({ add });
+    super(gestureCtrl, navCtrl, animationCtrl, renderer, router, cdr, modalCtrl, taskStorage);
   }
 
   async ngOnInit() {
@@ -85,7 +90,7 @@ export class DayPage extends SwipeableTabPage implements OnInit {
     }
   }
 
-  private async loadTasks() {
+  protected async loadTasks() {
     const allTasks = await this.taskStorage.loadTasks();
 
     this.tasks = allTasks
@@ -230,44 +235,5 @@ export class DayPage extends SwipeableTabPage implements OnInit {
   async toggleTask(task: PerfectDayTask) {
     task.done = !task.done;
     await this.taskStorage.updateTask(task.id, task);
-  }
-
-  async openAddModal() {
-    try {
-      // 1. Wywołanie lekkiej wibracji.
-      //   Capacitor sam sprawdza, czy urządzenie to wspiera.
-      await Haptics.impact({ style: ImpactStyle.Light });
-
-      console.log('Wibracja wywołana pomyślnie.');
-    } catch (e) {
-      // 2. Jeśli urządzenie tego nie wspiera, złapiemy błąd (w trybie webowym)
-      //    lub po prostu nic się nie wydarzy (na telefonie).
-      console.warn('Wibracja nie działa lub nie jest wspierana.', e);
-    }
-
-    const modal = await this.modalCtrl.create({
-      component: AddTaskModalComponent,
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data) {
-      await this.loadTasks();
-    }
-  }
-
-  async openEditModal(task: PerfectDayTask) {
-    const modal = await this.modalCtrl.create({
-      component: EditTaskModalComponent,
-      componentProps: { task },
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data) {
-      await this.loadTasks();
-    }
   }
 }

@@ -63,3 +63,8 @@ ion-tab-button {
     font-size: 13px;
   }
 }
+
+// Wyłącz domyślne animacje Ionic dla routingu
+ion-router-outlet {
+  animation: none !important;
+}

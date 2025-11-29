@@ -1,0 +1,27 @@
+<ion-footer>
+  <ion-toolbar class="tab-bar">
+    <div class="tab-buttons">
+      <button
+        class="tab-btn"
+        [class.active]="currentTab === 'day'"
+        (click)="navigateTo('/day')"
+      >
+        Dzień
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="currentTab === 'week'"
+        (click)="navigateTo('/week')"
+      >
+        Tydzień
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="currentTab === 'month'"
+        (click)="navigateTo('/month')"
+      >
+        Miesiąc
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
