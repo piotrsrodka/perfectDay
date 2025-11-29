@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -50,11 +51,12 @@ export class MonthPage extends SwipeableTabPage implements OnInit {
   constructor(
     private taskStorage: TaskStorageService,
     private modalCtrl: ModalController,
+    renderer: Renderer2,
     gestureCtrl: GestureController,
     navCtrl: NavController,
     animationCtrl: AnimationController
   ) {
-    super(gestureCtrl, navCtrl, animationCtrl);
+    super(gestureCtrl, navCtrl, animationCtrl, renderer);
     addIcons({ add });
   }
 

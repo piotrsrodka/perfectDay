@@ -56,12 +56,12 @@ export class DayPage extends SwipeableTabPage implements OnInit {
   constructor(
     private taskStorage: TaskStorageService,
     private modalCtrl: ModalController,
-    private renderer: Renderer2,
+    renderer: Renderer2,
     gestureCtrl: GestureController,
     navCtrl: NavController,
     animationCtrl: AnimationController
   ) {
-    super(gestureCtrl, navCtrl, animationCtrl);
+    super(gestureCtrl, navCtrl, animationCtrl, renderer);
     addIcons({ add });
   }
 
